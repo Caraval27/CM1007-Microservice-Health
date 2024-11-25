@@ -2,7 +2,6 @@ package journal.backend_hapi.Core.Model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import journal.backend_hapi.Core.Authority;
-import journal.backend_hapi.Persistence.UserEntity;
 
 public class User {
     private String id;
@@ -10,13 +9,6 @@ public class User {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Authority authority;
     private String password;
-
-    public User(UserEntity userEntity) {
-        id = userEntity.getId();
-        fullName = userEntity.getFullName();
-        authority = userEntity.getAuthority();
-        password = userEntity.getPassword();
-    }
 
     public User(String id, String fullName, Authority authority) {
         this.id = id;
@@ -53,10 +45,6 @@ public class User {
 
     public String getFullName() {
         return fullName;
-    }
-
-    public UserEntity getEntity() {
-        return new UserEntity(id, fullName, authority, password);
     }
 
     @Override
