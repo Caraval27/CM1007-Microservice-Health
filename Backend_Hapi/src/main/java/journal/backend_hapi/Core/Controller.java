@@ -4,24 +4,34 @@ import journal.backend_hapi.Core.Model.*;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Patient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8081"})
 @RestController
 public class Controller {
+    @Autowired
     private HapiService hapiService;
 
     public Controller() {}
+
+    @GetMapping("/hello")
+    public String sayHello(@RequestParam String id) {
+        Patient patient = hapiService.getPatientByIdentifier(id);
+        return "Hello, World!";
+    }
 
     @GetMapping("/patient")
     public ResponseEntity<PatientData> getPatient(@RequestParam String id) {
         try {
             Patient patient = hapiService.getPatientByIdentifier(id);
+            System.out.println(patient.getName().get(0).getNameAsSingleString());
             PatientData patientData = hapiService.getPatientData(patient);
+            System.out.println(patientData.getFullName());
             return ResponseEntity.ok(patientData);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -111,6 +121,16 @@ public class Controller {
         try {
             hapiService.addConditionToPatient(newCondition);
             return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/get_general_practitioner_by_identifier")
+    public ResponseEntity<String> getGeneralPractitionerByIdentifier(@RequestParam String id) {
+        try {
+            String receiverIdentifier = hapiService.getGeneralPractitionerByIdentifier(id);
+            return ResponseEntity.ok(receiverIdentifier);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }

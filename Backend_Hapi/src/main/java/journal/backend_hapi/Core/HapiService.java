@@ -218,7 +218,7 @@ public class HapiService {
                 .execute();
     }
 
-    public String getGeneralPractitionerIdentifierByPatientIdentifier(String identifierValue) {
+    public String getGeneralPractitionerByIdentifier(String identifierValue) {
         Patient patient = getPatientByIdentifier(identifierValue);
         if (patient.hasGeneralPractitioner()) {
             Reference generalPractitionerRef = patient.getGeneralPractitionerFirstRep();
