@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>journal</groupId>
-	<artifactId>Backend_Hapi</artifactId>
+	<artifactId>Backend_HAPI</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Backend_Hapi</name>
 	<description>Backend_Hapi</description>
@@ -48,11 +48,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.33</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
