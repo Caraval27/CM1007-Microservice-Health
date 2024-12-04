@@ -10,4 +10,4 @@ EXPOSE 8080
 
 COPY --from=build /build_journal_app/target/*.jar /journal_app/
 
-CMD ["sh", "-c", "java -jar /Backend_Hapi-0.0.1-SNAPSHOT.jar && java -jar /Backend_Hapi-0.0.1-SNAPSHOT-jar-with-dependencies.jar"]
+CMD ["sh", "-c", "java -jar Backend_Hapi-0.0.1-SNAPSHOT.jar && java -jar Backend_Hapi-0.0.1-SNAPSHOT-jar-with-dependencies.jar"]
