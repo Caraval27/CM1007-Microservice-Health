@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>journal</groupId>
-	<artifactId>Backend_HAPI</artifactId>
+	<artifactId>Backend_Hapi</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Backend_Hapi</name>
 	<description>Backend_Hapi</description>
