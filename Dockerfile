@@ -8,6 +8,6 @@ FROM openjdk:17-jdk-alpine
 WORKDIR /journal_app
 EXPOSE 8080
 
-COPY --from=build /build_journal_app/target/*.jar /journal_app/Backend_Hapi-0.0.1-SNAPSHOT.jar
+COPY --from=build /build_journal_app/target/*.jar /journal_app/
 
-ENTRYPOINT ["java", "-jar", "/Backend_Hapi-0.0.1-SNAPSHOT.jar"]
+CMD ["sh", "-c", "java -jar /journal_app/Backend_Hapi-0.0.1-SNAPSHOT.jar && java -jar /journal_app/Backend_Hapi-0.0.1-SNAPSHOT-jar-with-dependencies.jar"]
