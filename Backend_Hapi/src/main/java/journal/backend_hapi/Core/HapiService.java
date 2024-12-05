@@ -7,6 +7,10 @@ import journal.backend_hapi.Core.Model.*;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -516,5 +520,95 @@ public class HapiService {
         } else {
             System.out.println("Failed to create condition.");
         }
+    }
+
+    public List<Encounter> getEncountersByPractitionerIdentifier(String identifierValue) {
+        Practitioner practitioner = getPractitionerByIdentifier(identifierValue);
+        if (practitioner == null) {
+            return null;
+        }
+
+        Bundle bundle = client
+                .search()
+                .forResource(Encounter.class)
+                .where(Encounter.PRACTITIONER.hasId("Practitioner/" + practitioner.getIdElement().getIdPart()))
+                //.where(Encounter.DATE.exactly().day(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)))
+                .sort().descending(Encounter.DATE)
+                .returnBundle(Bundle.class)
+                .execute();
+
+        List<Encounter> encounters = new ArrayList<>(bundle.getEntry().stream()
+                .map(c -> (Encounter) c.getResource())
+                .toList());
+
+        while (bundle.getLink(Bundle.LINK_NEXT) != null) {
+            bundle = client.loadPage().next(bundle).execute();
+            encounters.addAll(bundle.getEntry().stream()
+                    .map(c -> (Encounter) c.getResource())
+                    .toList());
+        }
+
+        return encounters;
+    }
+
+    public EncounterData getEncounterData(Encounter encounter) {
+        if (encounter == null) {
+            return null;
+        }
+
+        String id = "";
+        if (encounter.hasId()) {
+            id = encounter.getIdElement().getIdPart();
+        }
+
+        String status = "";
+        if (encounter.hasStatus()) {
+            status = encounter.getStatus().toCode();
+        }
+
+        /*String statusHistory;
+        if (encounter.hasStatusHistory()) {
+
+        }*/
+
+        String type = "";
+        if (encounter.hasType()) {
+            type = encounter.getTypeFirstRep().getText();
+        }
+
+        String priority = "";
+        if (encounter.hasPriority()) {
+            priority = encounter.getPriority().getText();
+        }
+
+        PatientData patient = null;
+        if (encounter.hasSubject() && encounter.getSubject().hasReference()) {
+            String patientId = encounter.getSubject().getReference().split("/")[1];
+            patient = getPatientData(getPatientById(patientId));
+        }
+
+        LocalDateTime periodStart = null;
+        if (encounter.hasPeriod() && encounter.getPeriod().hasStart()) {
+            Date startDate = encounter.getPeriod().getStart();
+            periodStart = LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault());
+        }
+
+        LocalDateTime periodEnd = null;
+        if (encounter.hasPeriod() && encounter.getPeriod().hasEnd()) {
+            Date endDate = encounter.getPeriod().getEnd();
+            periodEnd = LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
+        }
+
+        String length = "";
+        if (encounter.hasLength()) {
+            length = encounter.getLength().getValue().toString();
+        }
+
+        String location = "";
+        if (encounter.hasLocation()) {
+            location = encounter.getLocationFirstRep().getLocation().getDisplay();
+        }
+
+        return new EncounterData(id, status, type, priority, patient, periodStart, periodEnd, length, location);
     }
 }

@@ -1,10 +1,7 @@
 package journal.backend_hapi.Core;
 
 import journal.backend_hapi.Core.Model.*;
-import org.hl7.fhir.r4.model.Condition;
-import org.hl7.fhir.r4.model.Observation;
-import org.hl7.fhir.r4.model.Patient;
-import org.hl7.fhir.r4.model.Practitioner;
+import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -113,6 +110,21 @@ public class Controller {
         try {
             hapiService.addConditionToPatient(newCondition);
             return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/encounters")
+    public ResponseEntity<List<EncounterData>> getEncounters(@RequestParam String id) {
+        try {
+            List<Encounter> encounters = hapiService.getEncountersByPractitionerIdentifier(id);
+            List<EncounterData> encountersData = new ArrayList<>();
+            for (Encounter encounter : encounters) {
+                EncounterData encounterData = hapiService.getEncounterData(encounter);
+                encountersData.add(encounterData);
+            }
+            return ResponseEntity.ok(encountersData);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
