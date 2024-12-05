@@ -127,15 +127,30 @@ public class HapiService {
 
         String hsaId = "";
         for (Identifier id : practitioner.getIdentifier()) {
-            if (id.getSystem().equals(patientSystem)) {
+            if (id.getSystem().equals(practitionerSystem)) {
                 hsaId = id.getValue();
                 break;
             }
         }
 
+        String phone = "";
+        String email = "";
+        if (practitioner.hasTelecom()) {
+            for (ContactPoint contactPoint : practitioner.getTelecom()) {
+                if (phone.isEmpty() && contactPoint.hasSystem() &&
+                        contactPoint.getSystem() == ContactPoint.ContactPointSystem.PHONE) {
+                    phone = contactPoint.getValue();
+                }
+                if (email.isEmpty() && contactPoint.hasSystem() &&
+                        contactPoint.getSystem() == ContactPoint.ContactPointSystem.EMAIL) {
+                    email = contactPoint.getValue();
+                }
+            }
+        }
+
         String fullName = practitioner.getName().get(0).getNameAsSingleString();
 
-        return new PractitionerData(hsaId, fullName);
+        return new PractitionerData(hsaId, fullName, email, phone);
     }
 
     public List<PractitionerRole> getPractitionerRoleByPractitionerId(String id) {

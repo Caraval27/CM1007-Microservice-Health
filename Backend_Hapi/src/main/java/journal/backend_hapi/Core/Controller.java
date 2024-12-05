@@ -4,6 +4,7 @@ import journal.backend_hapi.Core.Model.*;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Practitioner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,17 @@ public class Controller {
             PatientData patientData = hapiService.getPatientData(patient);
             System.out.println(patientData.getFullName());
             return ResponseEntity.ok(patientData);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/practitioner")
+    public ResponseEntity<PractitionerData> getPractitioner(@RequestParam String id) {
+        try {
+            Practitioner practitioner = hapiService.getPractitionerByIdentifier(id);
+            PractitionerData practitionerData = hapiService.getPractitionerData(practitioner);
+            return ResponseEntity.ok(practitionerData);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
