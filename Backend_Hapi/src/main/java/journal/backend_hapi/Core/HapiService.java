@@ -25,26 +25,6 @@ public class HapiService {
         client = context.newRestfulGenericClient(hapiServerURL);
     }
 
-    public List<Patient> getPatientsByIdentifierSystem() {
-        Bundle bundle = client.search()
-                .forResource(Patient.class)
-                .where(Patient.IDENTIFIER.hasSystemWithAnyCode(patientSystem))
-                .returnBundle(Bundle.class)
-                .execute();
-
-        List<Patient> patients = new ArrayList<>(bundle.getEntry().stream()
-                .map(p -> (Patient) p.getResource())
-                .toList());
-
-        while (bundle.getLink(Bundle.LINK_NEXT) != null) {
-            bundle = client.loadPage().next(bundle).execute();
-            patients.addAll(bundle.getEntry().stream()
-                    .map(p -> (Patient) p.getResource())
-                    .toList());
-        }
-        return patients;
-    }
-
     public PatientData getPatientData(Patient patient) {
         if (patient == null) {
             return null;

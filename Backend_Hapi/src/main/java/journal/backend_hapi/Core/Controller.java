@@ -19,12 +19,6 @@ public class Controller {
 
     public Controller() {}
 
-    @GetMapping("/hello")
-    public String sayHello(@RequestParam String id) {
-        Patient patient = hapiService.getPatientByIdentifier(id);
-        return "Hello, World!";
-    }
-
     @GetMapping("/patient")
     public ResponseEntity<PatientData> getPatient(@RequestParam String id) {
         try {
@@ -33,20 +27,6 @@ public class Controller {
             PatientData patientData = hapiService.getPatientData(patient);
             System.out.println(patientData.getFullName());
             return ResponseEntity.ok(patientData);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/patients")
-    public ResponseEntity<List<PatientData>> getPatients() {
-        try {
-            List<Patient> patients = hapiService.getPatientsByIdentifierSystem();
-            List<PatientData> patientsData = new ArrayList<>();
-            for (Patient patient : patients) {
-                patientsData.add(hapiService.getPatientData(patient));
-            }
-            return ResponseEntity.ok(patientsData);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
