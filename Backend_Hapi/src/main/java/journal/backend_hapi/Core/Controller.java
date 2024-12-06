@@ -5,6 +5,7 @@ import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,9 @@ import java.util.List;
 public class Controller {
     @Autowired
     private HapiService hapiService;
+
+    @Autowired
+    private ImageServiceClient imageServiceClient;
 
     public Controller() {}
 
@@ -82,9 +86,11 @@ public class Controller {
     }
 
     @PostMapping("/create_observation")
-    public ResponseEntity<Void> createNewObservation(@RequestBody CreateObservation newObservation) {
+    public ResponseEntity<Void> createNewObservation(@RequestPart("observation") CreateObservation newObservation, @RequestPart("image") MultipartFile image) {
         try {
-            hapiService.addObservationToPatient(newObservation);
+            String binaryId = imageServiceClient.createBinary(image);
+            System.out.println("Binary created with id: " + binaryId);
+            hapiService.addObservationToPatient(newObservation, binaryId, image.getContentType());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

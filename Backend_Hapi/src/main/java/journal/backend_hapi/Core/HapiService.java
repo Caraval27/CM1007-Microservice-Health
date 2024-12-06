@@ -318,7 +318,7 @@ public class HapiService {
         return new ObservationData(id, patientData, performerData, display, value, unit, note, status, date);
     }
 
-    public void addObservationToPatient(CreateObservation newObservation) {
+    public void addObservationToPatient(CreateObservation newObservation, String binaryId, String mimeType) {
         Observation observation = new Observation();
 
         observation.setStatus(Observation.ObservationStatus.FINAL);
@@ -356,6 +356,8 @@ public class HapiService {
 
         Practitioner practitioner = getPractitionerByIdentifier(newObservation.getPerformerId());
         observation.addPerformer(new Reference("Practitioner/" + practitioner.getIdElement().getIdPart()));
+
+        observation.addFocus(new Reference("Binary/" + binaryId));
 
         MethodOutcome outcome = client.create()
                 .resource(observation)
