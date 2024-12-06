@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import journal.backend_hapi.Core.Model.*;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 
@@ -315,10 +316,19 @@ public class HapiService {
             date = observation.getIssued();
         }
 
-        return new ObservationData(id, patientData, performerData, display, value, unit, note, status, date);
+        String imageId = null;
+        for (Reference focus : observation.getFocus()) {
+            IIdType reference = focus.getReferenceElement();
+            if (reference != null && "Binary".equals(reference.getResourceType())) {
+                imageId = reference.getIdPart();
+                break;
+            }
+        }
+
+        return new ObservationData(id, patientData, performerData, display, value, unit, note, status, date, imageId);
     }
 
-    public void addObservationToPatient(CreateObservation newObservation, String binaryId, String mimeType) {
+    public void addObservationToPatient(CreateObservation newObservation, String binaryId) {
         Observation observation = new Observation();
 
         observation.setStatus(Observation.ObservationStatus.FINAL);

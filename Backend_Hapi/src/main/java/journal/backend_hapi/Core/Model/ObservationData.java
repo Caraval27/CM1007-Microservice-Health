@@ -12,8 +12,9 @@ public class ObservationData {
     private String note;
     private String status;
     private Date date;
+    private String imageId;
 
-    public ObservationData(String id, PatientData patient, PractitionerData performer, String display, String value, String unit, String note, String status, Date date) {
+    public ObservationData(String id, PatientData patient, PractitionerData performer, String display, String value, String unit, String note, String status, Date date, String imageId) {
         this.id = id;
         this.patient = patient;
         this.performer = performer;
@@ -23,6 +24,7 @@ public class ObservationData {
         this.note = note;
         this.status = status;
         this.date = date;
+        this.imageId = imageId;
     }
 
     public String getId() {
@@ -95,6 +97,14 @@ public class ObservationData {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public String getImageId() {
+        return imageId;
+    }
+
+    public void setImageId(String imageId) {
+        this.imageId = imageId;
     }
 
     @Override

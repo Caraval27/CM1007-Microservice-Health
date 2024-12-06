@@ -88,9 +88,9 @@ public class Controller {
     @PostMapping("/create_observation")
     public ResponseEntity<Void> createNewObservation(@RequestPart("observation") CreateObservation newObservation, @RequestPart("image") MultipartFile image) {
         try {
-            String binaryId = imageServiceClient.createBinary(image);
-            System.out.println("Binary created with id: " + binaryId);
-            hapiService.addObservationToPatient(newObservation, binaryId, image.getContentType());
+            String imageId = imageServiceClient.createBinary(image);
+            System.out.println("Binary created with id: " + imageId);
+            hapiService.addObservationToPatient(newObservation, imageId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
