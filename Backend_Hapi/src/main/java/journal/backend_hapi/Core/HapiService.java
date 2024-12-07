@@ -367,7 +367,9 @@ public class HapiService {
         Practitioner practitioner = getPractitionerByIdentifier(newObservation.getPerformerId());
         observation.addPerformer(new Reference("Practitioner/" + practitioner.getIdElement().getIdPart()));
 
-        observation.addFocus(new Reference("Binary/" + binaryId));
+        if (binaryId != null) {
+            observation.addFocus(new Reference("Binary/" + binaryId));
+        }
 
         MethodOutcome outcome = client.create()
                 .resource(observation)

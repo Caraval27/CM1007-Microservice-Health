@@ -86,9 +86,13 @@ public class Controller {
     }
 
     @PostMapping("/create_observation")
-    public ResponseEntity<Void> createNewObservation(@RequestPart("observation") CreateObservation newObservation, @RequestPart("image") MultipartFile image) {
+    public ResponseEntity<Void> createNewObservation(@RequestPart("observation") CreateObservation newObservation,
+                                                     @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
-            String imageId = imageServiceClient.createBinary(image);
+            String imageId = null;
+            if (image != null) {
+                imageId = imageServiceClient.createBinary(image);
+            }
             System.out.println("Binary created with id: " + imageId);
             hapiService.addObservationToPatient(newObservation, imageId);
             return ResponseEntity.ok().build();
