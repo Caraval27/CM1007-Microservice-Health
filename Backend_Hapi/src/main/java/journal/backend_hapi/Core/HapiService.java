@@ -8,10 +8,8 @@ import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -20,14 +18,15 @@ import java.util.List;
 public class HapiService {
     private FhirContext context;
     private IGenericClient client;
-    private static final String patientSystem = "http://electronichealth.se/identifier/personnummer";
-    private static final String practitionerSystem = "http://terminology.hl7.org/CodeSystem/v2-0203";
-    private static final String practitionerRoleSystem = "http://terminology.hl7.org/CodeSystem/practitioner-role";
-    private static final String hapiServerURL = "https://hapi-fhir.app.cloud.cbh.kth.se/fhir";
+    private static final String PATIENT_SYSTEM = "http://electronichealth.se/identifier/personnummer";
+    private static final String PRACTITIONER_SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";
+    private static final String PRACTITIONER_ROLE_SYSTEM = "http://terminology.hl7.org/CodeSystem/practitioner-role";
+    private static final String HAPI_SERVER_URL = "https://hapi-fhir.app.cloud.cbh.kth.se/fhir";
+    private static final String CONDITION_SYSTEM = "http://snomed.info/sct";
 
     public HapiService() {
         context = FhirContext.forR4();
-        client = context.newRestfulGenericClient(hapiServerURL);
+        client = context.newRestfulGenericClient(HAPI_SERVER_URL);
     }
 
     public PatientData getPatientData(Patient patient) {
@@ -37,7 +36,7 @@ public class HapiService {
         String ssn = "";
         if (patient.hasIdentifier()) {
             for (Identifier id : patient.getIdentifier()) {
-                if (id.hasSystem() && id.getSystem().equals(patientSystem)) {
+                if (id.hasSystem() && id.getSystem().equals(PATIENT_SYSTEM)) {
                     ssn = id.getValue();
                     break;
                 }
@@ -108,7 +107,7 @@ public class HapiService {
         Bundle bundle = client
                 .search()
                 .forResource(Patient.class)
-                .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(patientSystem, idValue))
+                .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(PATIENT_SYSTEM, idValue))
                 .returnBundle(Bundle.class)
                 .execute();
         List<Bundle.BundleEntryComponent> entries = bundle.getEntry();
@@ -132,7 +131,7 @@ public class HapiService {
 
         String hsaId = "";
         for (Identifier id : practitioner.getIdentifier()) {
-            if (id.getSystem().equals(practitionerSystem)) {
+            if (id.getSystem().equals(PRACTITIONER_SYSTEM)) {
                 hsaId = id.getValue();
                 break;
             }
@@ -185,7 +184,7 @@ public class HapiService {
                 CodeableConcept codeableConcept = practitionerRole.getCodeFirstRep();
                 if (codeableConcept.hasCoding()) {
                     for (Coding coding : codeableConcept.getCoding()) {
-                        if (coding.getSystem().equals(practitionerRoleSystem)) {
+                        if (coding.getSystem().equals(PRACTITIONER_ROLE_SYSTEM)) {
                             if (coding.getCode().equals("doctor")) {
                                 authority = Authority.Doctor;
                             }
@@ -201,7 +200,7 @@ public class HapiService {
         Bundle bundle = client
                 .search()
                 .forResource(Practitioner.class)
-                .where(Practitioner.IDENTIFIER.exactly().systemAndIdentifier(practitionerSystem, identifierValue))
+                .where(Practitioner.IDENTIFIER.exactly().systemAndIdentifier(PRACTITIONER_SYSTEM, identifierValue))
                 .returnBundle(Bundle.class)
                 .execute();
         List<Bundle.BundleEntryComponent> entries = bundle.getEntry();
@@ -226,7 +225,7 @@ public class HapiService {
                 Practitioner practitioner = getPractitionerById(generalPractitionerRef.getReferenceElement().getIdPart());
                 if (practitioner.hasIdentifier()) {
                     for (Identifier identifier : practitioner.getIdentifier()) {
-                        if (practitionerSystem.equals(identifier.getSystem())) {
+                        if (PRACTITIONER_SYSTEM.equals(identifier.getSystem())) {
                             return identifier.getValue();
                         }
                     }
@@ -325,6 +324,7 @@ public class HapiService {
             }
         }
 
+
         return new ObservationData(id, patientData, performerData, display, value, unit, note, status, date, imageId);
     }
 
@@ -389,6 +389,7 @@ public class HapiService {
                 .search()
                 .forResource(Condition.class)
                 .where(Condition.SUBJECT.hasId("Patient/" + patient.getIdElement().getIdPart()))
+                .where(Condition.CODE.hasSystemWithAnyCode(CONDITION_SYSTEM))
                 .sort().descending(Condition.RECORDED_DATE)
                 .returnBundle(Bundle.class)
                 .execute();
@@ -474,7 +475,7 @@ public class HapiService {
         if (code != null && display != null) {
             CodeableConcept codeableConcept = new CodeableConcept();
             codeableConcept.addCoding(new Coding()
-                    .setSystem("http://hl7.org/fhir/sid/icd-10") // osäker
+                    .setSystem(CONDITION_SYSTEM) // osäker
                     .setCode(code)
                     .setDisplay(display));
             condition.setCode(codeableConcept);
