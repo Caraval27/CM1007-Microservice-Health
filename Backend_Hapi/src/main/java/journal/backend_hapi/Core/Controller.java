@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8081",
-        "https://journal-app-frontend.app.cloud.cbh.kth.se"},
-        allowedHeaders = "*",
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
+        "https://journal-app-frontend.app.cloud.cbh.kth.se:3000"})
 @RestController
 public class Controller {
     @Autowired
