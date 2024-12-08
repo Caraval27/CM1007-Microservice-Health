@@ -52,7 +52,9 @@ public class Controller {
     @GetMapping("/find_patient")
     public ResponseEntity<User> getPatientUser(@RequestParam String id) {
         try {
+            System.out.println("Id: " + id);
             User patientUser = hapiService.getPatientUserByIdentifier(id);
+            System.out.println("Name: " + patientUser.getFullName());
             if (patientUser == null) {
                 return ResponseEntity.noContent().build();
             }
