@@ -32,6 +32,7 @@ public class Controller {
             System.out.println(patientData.getFullName());
             return ResponseEntity.ok(patientData);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -43,6 +44,7 @@ public class Controller {
             PractitionerData practitionerData = hapiService.getPractitionerData(practitioner);
             return ResponseEntity.ok(practitionerData);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -56,6 +58,7 @@ public class Controller {
             }
             return ResponseEntity.ok(patientUser);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -69,6 +72,7 @@ public class Controller {
             }
             return ResponseEntity.ok(practitionerUser);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -83,6 +87,7 @@ public class Controller {
             }
             return ResponseEntity.ok(observationsData);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -99,6 +104,7 @@ public class Controller {
             hapiService.addObservationToPatient(newObservation, imageId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -113,6 +119,7 @@ public class Controller {
             }
             return ResponseEntity.ok(conditionsData);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -123,6 +130,7 @@ public class Controller {
             hapiService.addConditionToPatient(newCondition);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -138,6 +146,7 @@ public class Controller {
             }
             return ResponseEntity.ok(encountersData);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -148,6 +157,7 @@ public class Controller {
             String receiverIdentifier = hapiService.getGeneralPractitionerByIdentifier(id);
             return ResponseEntity.ok(receiverIdentifier);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
