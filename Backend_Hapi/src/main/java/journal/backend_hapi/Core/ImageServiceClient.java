@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
-@FeignClient(name = "image-service", url = "http://localhost:3001")
+//@FeignClient(name = "image-service", url = "http://localhost:3001")
+@FeignClient(name = "image-service", url = "https://journal-app-image.app.cloud.cbh.kth.se")
 public interface ImageServiceClient {
     @PostMapping(value = "/create-binary", consumes = "multipart/form-data")
     String createBinary(@RequestPart("image") MultipartFile image);
