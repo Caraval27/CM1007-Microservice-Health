@@ -8,8 +8,10 @@ import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -547,7 +549,7 @@ public class HapiService {
                 .search()
                 .forResource(Encounter.class)
                 .where(Encounter.PRACTITIONER.hasId("Practitioner/" + practitioner.getIdElement().getIdPart()))
-                //.where(Encounter.DATE.exactly().day(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)))
+                .where(Encounter.DATE.exactly().day(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)))
                 .sort().descending(Encounter.DATE)
                 .returnBundle(Bundle.class)
                 .execute();
