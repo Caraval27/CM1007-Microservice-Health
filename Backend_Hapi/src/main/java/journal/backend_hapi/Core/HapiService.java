@@ -20,11 +20,13 @@ import java.util.List;
 public class HapiService {
     private FhirContext context;
     private IGenericClient client;
+
+    private static final String HAPI_SERVER_URL = "https://hapi-fhir.app.cloud.cbh.kth.se/fhir";
     private static final String PATIENT_SYSTEM = "http://electronichealth.se/identifier/personnummer";
     private static final String PRACTITIONER_SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";
     private static final String PRACTITIONER_ROLE_SYSTEM = "http://terminology.hl7.org/CodeSystem/practitioner-role";
-    private static final String HAPI_SERVER_URL = "https://hapi-fhir.app.cloud.cbh.kth.se/fhir";
     private static final String CONDITION_SYSTEM = "http://snomed.info/sct";
+    private static final String OBSERVATION_SYSTEM = "http://loinc.org";
 
     public HapiService() {
         context = FhirContext.forR4();
@@ -262,6 +264,7 @@ public class HapiService {
                 .search()
                 .forResource(Observation.class)
                 .where(Observation.SUBJECT.hasId("Patient/" + patient.getIdElement().getIdPart()))
+                .where(Condition.CODE.hasSystemWithAnyCode(OBSERVATION_SYSTEM))
                 .sort().descending(Observation.DATE)
                 .returnBundle(Bundle.class)
                 .execute();
@@ -356,7 +359,7 @@ public class HapiService {
         if (code != null && display != null) {
             CodeableConcept codeableConcept = new CodeableConcept();
             codeableConcept.addCoding(new Coding()
-                    .setSystem("http://loinc.org")
+                    .setSystem(OBSERVATION_SYSTEM)
                     .setCode(code)
                     .setDisplay(display));
             observation.setCode(codeableConcept);
@@ -495,7 +498,7 @@ public class HapiService {
         if (code != null && display != null) {
             CodeableConcept codeableConcept = new CodeableConcept();
             codeableConcept.addCoding(new Coding()
-                    .setSystem(CONDITION_SYSTEM) // osäker
+                    .setSystem(CONDITION_SYSTEM)
                     .setCode(code)
                     .setDisplay(display));
             condition.setCode(codeableConcept);
@@ -598,11 +601,6 @@ public class HapiService {
         if (encounter.hasStatus()) {
             status = encounter.getStatus().toCode();
         }
-
-        /*String statusHistory;
-        if (encounter.hasStatusHistory()) {
-
-        }*/
 
         String type = "";
         if (encounter.hasType()) {
