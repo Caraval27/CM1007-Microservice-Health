@@ -1,8 +1,13 @@
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /build_journal_app
 COPY Lab3_Health/pom.xml .
+RUN mvn dependency:go-offline #osäker
+
 COPY Lab3_Health/src ./src
-RUN mvn clean package -DskipTests
+
+RUN mvn clean test
+
+RUN mvn clean package
 
 FROM openjdk:17-jdk-alpine
 WORKDIR /journal_app

@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class HapiService {
+public abstract class HealthService {
     private FhirContext context;
     private IGenericClient client;
 
@@ -28,7 +28,7 @@ public class HapiService {
     private static final String CONDITION_SYSTEM = "http://snomed.info/sct";
     private static final String OBSERVATION_SYSTEM = "http://loinc.org";
 
-    public HapiService() {
+    public HealthService() {
         context = FhirContext.forR4();
         client = context.newRestfulGenericClient(HAPI_SERVER_URL);
     }
@@ -660,4 +660,6 @@ public class HapiService {
 
         return new EncounterData(id, status, type, priority, patient, periodStart, periodEnd, length, location);
     }
+
+    protected abstract IGenericClient getClient();
 }

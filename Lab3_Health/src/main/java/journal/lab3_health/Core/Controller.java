@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 public class Controller {
     @Autowired
-    private HapiService hapiService;
+    private HealthService healthService;
 
     @Autowired
     private ImageServiceClient imageServiceClient;
@@ -26,9 +26,9 @@ public class Controller {
     @GetMapping("/patient")
     public ResponseEntity<PatientData> getPatient(@RequestParam String id) {
         try {
-            Patient patient = hapiService.getPatientByIdentifier(id);
+            Patient patient = healthService.getPatientByIdentifier(id);
             System.out.println(patient.getName().get(0).getNameAsSingleString());
-            PatientData patientData = hapiService.getPatientData(patient);
+            PatientData patientData = healthService.getPatientData(patient);
             System.out.println(patientData.getFullName());
             return ResponseEntity.ok(patientData);
         } catch (Exception e) {
@@ -40,8 +40,8 @@ public class Controller {
     @GetMapping("/practitioner")
     public ResponseEntity<PractitionerData> getPractitioner(@RequestParam String id) {
         try {
-            Practitioner practitioner = hapiService.getPractitionerByIdentifier(id);
-            PractitionerData practitionerData = hapiService.getPractitionerData(practitioner);
+            Practitioner practitioner = healthService.getPractitionerByIdentifier(id);
+            PractitionerData practitionerData = healthService.getPractitionerData(practitioner);
             return ResponseEntity.ok(practitionerData);
         } catch (Exception e) {
             e.printStackTrace();
@@ -52,7 +52,7 @@ public class Controller {
     @GetMapping("/find_patient")
     public ResponseEntity<User> getPatientUser(@RequestParam String id) {
         try {
-            User patientUser = hapiService.getPatientUserByIdentifier(id);
+            User patientUser = healthService.getPatientUserByIdentifier(id);
             if (patientUser == null) {
                 return ResponseEntity.noContent().build();
             }
@@ -66,7 +66,7 @@ public class Controller {
     @GetMapping("/find_practitioner")
     public ResponseEntity<User> getPractitionerUser(@RequestParam String id) {
         try {
-            User practitionerUser = hapiService.getPractitionerUserByIdentifier(id);
+            User practitionerUser = healthService.getPractitionerUserByIdentifier(id);
             if (practitionerUser == null) {
                 return ResponseEntity.noContent().build();
             }
@@ -80,10 +80,10 @@ public class Controller {
     @GetMapping("/observations")
     public ResponseEntity<List<ObservationData>> getObservations(@RequestParam String id) {
         try {
-            List<Observation> observations = hapiService.getObservationsByPatientIdentifier(id);
+            List<Observation> observations = healthService.getObservationsByPatientIdentifier(id);
             List<ObservationData> observationsData = new ArrayList<>();
             for (Observation observation : observations) {
-                observationsData.add(hapiService.getObservationData(observation));
+                observationsData.add(healthService.getObservationData(observation));
             }
             return ResponseEntity.ok(observationsData);
         } catch (Exception e) {
@@ -101,7 +101,7 @@ public class Controller {
                 imageId = imageServiceClient.createBinary(image);
             }
             System.out.println("Binary created with id: " + imageId);
-            hapiService.addObservationToPatient(newObservation, imageId);
+            healthService.addObservationToPatient(newObservation, imageId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,10 +112,10 @@ public class Controller {
     @GetMapping("/conditions")
     public ResponseEntity<List<ConditionData>> getConditions(@RequestParam String id) {
         try {
-            List<Condition> conditions = hapiService.getConditionsByPatientIdentifier(id);
+            List<Condition> conditions = healthService.getConditionsByPatientIdentifier(id);
             List<ConditionData> conditionsData = new ArrayList<>();
             for (Condition condition : conditions) {
-                conditionsData.add(hapiService.getConditionData(condition));
+                conditionsData.add(healthService.getConditionData(condition));
             }
             return ResponseEntity.ok(conditionsData);
         } catch (Exception e) {
@@ -127,7 +127,7 @@ public class Controller {
     @PostMapping("/create_condition")
     public ResponseEntity<Void> createNewCondition(@RequestBody CreateCondition newCondition) {
         try {
-            hapiService.addConditionToPatient(newCondition);
+            healthService.addConditionToPatient(newCondition);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,10 +138,10 @@ public class Controller {
     @GetMapping("/encounters")
     public ResponseEntity<List<EncounterData>> getEncounters(@RequestParam String id) {
         try {
-            List<Encounter> encounters = hapiService.getEncountersByPractitionerIdentifier(id);
+            List<Encounter> encounters = healthService.getEncountersByPractitionerIdentifier(id);
             List<EncounterData> encountersData = new ArrayList<>();
             for (Encounter encounter : encounters) {
-                EncounterData encounterData = hapiService.getEncounterData(encounter);
+                EncounterData encounterData = healthService.getEncounterData(encounter);
                 encountersData.add(encounterData);
             }
             return ResponseEntity.ok(encountersData);
@@ -154,7 +154,7 @@ public class Controller {
     @GetMapping("/get_general_practitioner_by_identifier")
     public ResponseEntity<String> getGeneralPractitionerByIdentifier(@RequestParam String id) {
         try {
-            String receiverIdentifier = hapiService.getGeneralPractitionerByIdentifier(id);
+            String receiverIdentifier = healthService.getGeneralPractitionerByIdentifier(id);
             return ResponseEntity.ok(receiverIdentifier);
         } catch (Exception e) {
             e.printStackTrace();

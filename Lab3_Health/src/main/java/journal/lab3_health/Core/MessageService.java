@@ -12,7 +12,7 @@ public class MessageService {
     private KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
-    private HapiService hapiService;
+    private HealthService healthService;
 
     @KafkaListener(topics = "request-general-practitioner-topic", groupId = "health-service-group")
     public void processGeneralPractitionerRequest(@Payload(required = false)String senderId) {
@@ -21,7 +21,7 @@ public class MessageService {
             return;
         }
 
-        String generalPractitioner = hapiService.getGeneralPractitionerByIdentifier(senderId);
+        String generalPractitioner = healthService.getGeneralPractitionerByIdentifier(senderId);
 
         if (generalPractitioner == null || generalPractitioner.trim().isEmpty()) {
             System.err.println("No practitioner found. Ignoring message.");
@@ -38,7 +38,7 @@ public class MessageService {
             return;
         }
 
-        String name = hapiService.getPatientOrPractitionerNameByIdentifier(identifier);
+        String name = healthService.getPatientOrPractitionerNameByIdentifier(identifier);
 
         if (name == null || name.trim().isEmpty()) {
             System.err.println("No name found. Ignoring message.");
