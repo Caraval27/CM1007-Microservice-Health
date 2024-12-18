@@ -13,7 +13,7 @@ public class MessageConsumer {
     @Autowired
     private HapiService hapiService;
 
-    @KafkaListener(topics = "request-general-practitioner-topic", groupId = "health-service-group")
+    @KafkaListener(topics = "request-general-practitioner-topic", groupId = "message-service-group")
     public void receiveGeneralPractitionerRequest(String id) {
         String generalPractitioner = hapiService.getGeneralPractitionerByIdentifier(id);
         kafkaTemplate.send("receive-general-practitioner-topic", generalPractitioner);
