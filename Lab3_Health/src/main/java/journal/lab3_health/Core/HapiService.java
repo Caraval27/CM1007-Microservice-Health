@@ -255,6 +255,24 @@ public class HapiService {
         return null;
     }
 
+    public String getPatientOrPractitionerNameByIdentifier(String identifierValue) {
+        Patient patient = getPatientByIdentifier(identifierValue);
+        if (patient != null) {
+            if (patient.hasName() && !patient.getName().isEmpty()) {
+                return patient.getNameFirstRep().getNameAsSingleString();
+            }
+        }
+
+        Practitioner practitioner = getPractitionerByIdentifier(identifierValue);
+        if (practitioner != null) {
+            if (practitioner.hasName() && !practitioner.getName().isEmpty()) {
+                 return practitioner.getNameFirstRep().getNameAsSingleString();
+            }
+        }
+
+        return null;
+    }
+
     public List<Observation> getObservationsByPatientIdentifier(String identifierValue) {
         Patient patient = getPatientByIdentifier(identifierValue);
         if (patient == null) {
