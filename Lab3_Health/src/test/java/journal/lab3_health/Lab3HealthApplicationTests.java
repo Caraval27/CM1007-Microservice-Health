@@ -9,5 +9,4 @@ class Lab3HealthApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
