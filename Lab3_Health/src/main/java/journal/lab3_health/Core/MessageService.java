@@ -7,9 +7,9 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TestKafka {
-    private static final String REQUEST_TOPIC = "request-topic";
-    private static final String RESPONSE_TOPIC = "response-topic";
+public class MessageService {
+    private static final String REQUEST_TOPIC = "request-general-practitioner-topic";
+    private static final String RESPONSE_TOPIC = "response-general-practitioner-topic";
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -18,16 +18,19 @@ public class TestKafka {
     private HapiService hapiService;
 
     @KafkaListener(topics = REQUEST_TOPIC, groupId = "health-service-group")
-    public void processRequest(@Payload(required = false)String requestMessage) {
-        if (requestMessage == null || requestMessage.trim().isEmpty()) {
+    public void processGeneralPractitionerRequest(@Payload(required = false)String senderId) {
+        if (senderId == null || senderId.trim().isEmpty()) {
             System.err.println("Received empty payload. Ignoring message.");
             return;
         }
-        String response = hapiService.getGeneralPractitionerByIdentifier(requestMessage);
-        if (response == null || response.trim().isEmpty()) {
+
+        String generalPractitioner = hapiService.getGeneralPractitionerByIdentifier(senderId);
+
+        if (generalPractitioner == null || generalPractitioner.trim().isEmpty()) {
             System.err.println("No practitioner found. Ignoring message.");
             return;
         }
-        kafkaTemplate.send(RESPONSE_TOPIC, response);
+
+        kafkaTemplate.send(RESPONSE_TOPIC, generalPractitioner);
     }
 }
