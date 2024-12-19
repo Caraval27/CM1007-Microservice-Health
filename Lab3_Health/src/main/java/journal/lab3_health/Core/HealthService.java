@@ -282,7 +282,7 @@ public class HealthService {
                 .search()
                 .forResource(Observation.class)
                 .where(Observation.SUBJECT.hasId("Patient/" + patient.getIdElement().getIdPart()))
-                .where(Condition.CODE.hasSystemWithAnyCode(OBSERVATION_SYSTEM))
+                .where(Observation.CODE.hasSystemWithAnyCode(OBSERVATION_SYSTEM))
                 .sort().descending(Observation.DATE)
                 .returnBundle(Bundle.class)
                 .execute();

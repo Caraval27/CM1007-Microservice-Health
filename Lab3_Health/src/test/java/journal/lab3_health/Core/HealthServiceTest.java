@@ -35,7 +35,6 @@ public class HealthServiceTest {
     @Mock
     private IGenericClient mockClient;
 
-    private static final String HAPI_SERVER_URL = "https://hapi-fhir.app.cloud.cbh.kth.se/fhir";
     private static final String PATIENT_SYSTEM = "http://electronichealth.se/identifier/personnummer";
     private static final String PRACTITIONER_SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0203";
     private static final String PRACTITIONER_ROLE_SYSTEM = "http://terminology.hl7.org/CodeSystem/practitioner-role";
@@ -168,7 +167,22 @@ public class HealthServiceTest {
         String identifierValue = "12345";
 
         Practitioner mockPractitioner = createMockPractitioner(identifierValue, "Jane Doe");
-        mockPractitionerSearch(mockPractitioner);
+
+        IUntypedQuery mockQuery = mock(IUntypedQuery.class);
+        IQuery mockQueryForResource = mock(IQuery.class);
+        IQuery mockWhere = mock(IQuery.class);
+        Bundle mockBundle = new Bundle();
+        if (mockPractitioner != null) {
+            Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
+            entry.setResource(mockPractitioner);
+            mockBundle.addEntry(entry);
+        }
+
+        when(mockClient.search()).thenReturn(mockQuery);
+        when(mockQuery.forResource(Practitioner.class)).thenReturn(mockQueryForResource);
+        when(mockQueryForResource.where((ICriterion<?>) any())).thenReturn(mockWhere);
+        when(mockWhere.returnBundle(Bundle.class)).thenReturn(mockWhere);
+        when(mockWhere.execute()).thenReturn(mockBundle);
 
         Practitioner practitioner = healthService.getPractitionerByIdentifier(identifierValue);
 
@@ -228,7 +242,7 @@ public class HealthServiceTest {
     }
 
     @Test
-    void testGetPractitionerNameByIdentifier() {
+    void testGetPatientOrPractitionerNameByIdentifier() {
         String identifierValue = "12345";
         String patientName = "John Doe";
         String practitionerName = "Samantha Smith";
@@ -259,43 +273,31 @@ public class HealthServiceTest {
 
     @Test
     void testGetObservationsByPatientIdentifier() {
-        /*String identifierValue = "12345";
-        String observationIdentifier = "67890";
+        String patientIdentifier = "12345";
+        String observationId = "67890";
 
-        Patient mockPatient = createMockPatient(identifierValue, "Jane Doe");
-
-        HealthService healthService = Mockito.spy(new HealthService());
-        Mockito.doReturn(mockPatient).when(healthService).getPatientByIdentifier(identifierValue);
+        Patient mockPatient = createMockPatient(patientIdentifier, "Jane Doe");
 
         Observation mockObservation = new Observation();
-        mockObservation.setId(observationIdentifier);
+        mockObservation.setId(observationId);
 
         Bundle mockBundle = new Bundle();
         Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
         entry.setResource(mockObservation);
         mockBundle.addEntry(entry);
 
-        IUntypedQuery mockQuery = mock(IUntypedQuery.class);
-        IQuery<Bundle> mockQueryForResource = mock(IQuery.class);
-        IQuery<Bundle> mockWhere = mock(IQuery.class);
-        ISort<Bundle> mockSort = mock(ISort.class);
-        IQuery<Bundle> mockDescending = mock(IQuery.class);
-        IQuery<Bundle> mockReturnBundle = mock(IQuery.class);
+        HealthService healthService = Mockito.spy(new HealthService());
+        Mockito.doReturn(mockPatient).when(healthService).getPatientByIdentifier(patientIdentifier);
 
-        when(mockClient.search()).thenReturn(mockQuery);
-        when(mockQuery.forResource(Observation.class)).thenReturn(mockQueryForResource);
-        when(mockQueryForResource.where(any(ICriterion.class))).thenReturn(mockWhere);
-        when(mockSort.descending(any(IParam.class))).thenReturn(mockDescending);
-        when(mockDescending.returnBundle(Bundle.class)).thenReturn(mockReturnBundle);
-        when(mockReturnBundle.execute()).thenReturn(mockBundle);
+        setupMockQueryChain(Observation.class, mockBundle);
 
         ReflectionTestUtils.setField(healthService, "client", mockClient);
 
-        List<Observation> observations = healthService.getObservationsByPatientIdentifier(identifierValue);
+        List<Observation> observations = healthService.getObservationsByPatientIdentifier(patientIdentifier);
 
         assertNotNull(observations, "Observations should not be null");
         assertEquals(1, observations.size(), "There should be one observation");
-        assertEquals(mockObservation.getId(), observations.get(0).getIdElement().getIdPart(), "Observation ID should match");*/
+        assertEquals(observationId, observations.get(0).getIdElement().getIdPart(), "Observation ID should match");
     }
 
     @Test
@@ -382,7 +384,31 @@ public class HealthServiceTest {
 
     @Test
     void testGetConditionsByPatientIdentifier() {
+        String patientIdentifier = "12345";
+        String conditionId = "67890";
 
+        Patient mockPatient = createMockPatient(patientIdentifier, "Jane Doe");
+
+        Condition mockCondition = new Condition();
+        mockCondition.setId(conditionId);
+
+        Bundle mockBundle = new Bundle();
+        Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
+        entry.setResource(mockCondition);
+        mockBundle.addEntry(entry);
+
+        HealthService healthService = Mockito.spy(new HealthService());
+        Mockito.doReturn(mockPatient).when(healthService).getPatientByIdentifier(patientIdentifier);
+
+        setupMockQueryChain(Condition.class, mockBundle);
+
+        ReflectionTestUtils.setField(healthService, "client", mockClient);
+
+        List<Condition> conditions = healthService.getConditionsByPatientIdentifier(patientIdentifier);
+
+        assertNotNull(conditions, "Conditions should not be null");
+        assertEquals(1, conditions.size(), "There should be one condition");
+        assertEquals(conditionId, conditions.get(0).getIdElement().getIdPart(), "Condition ID should match");
     }
 
     @Test
@@ -480,7 +506,31 @@ public class HealthServiceTest {
 
     @Test
     void testGetEncountersByPractitionerIdentifier() {
+        String practitionerIdentifier = "12345";
+        String encounterId = "67890";
 
+        Practitioner mockPractitioner = createMockPractitioner(practitionerIdentifier, "Samantha Smith");
+
+        Encounter mockEncounter = new Encounter();
+        mockEncounter.setId(encounterId);
+
+        Bundle mockBundle = new Bundle();
+        Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
+        entry.setResource(mockEncounter);
+        mockBundle.addEntry(entry);
+
+        HealthService healthService = Mockito.spy(new HealthService());
+        Mockito.doReturn(mockPractitioner).when(healthService).getPractitionerByIdentifier(practitionerIdentifier);
+
+        setupMockQueryChain(Encounter.class, mockBundle);
+
+        ReflectionTestUtils.setField(healthService, "client", mockClient);
+
+        List<Encounter> encounters = healthService.getEncountersByPractitionerIdentifier(practitionerIdentifier);
+
+        assertNotNull(encounters, "Encounters should not be null");
+        assertEquals(1, encounters.size(), "There should be one encounter");
+        assertEquals(encounterId, encounters.get(0).getIdElement().getIdPart(), "Encounter ID should match");
     }
 
     @Test
@@ -552,24 +602,6 @@ public class HealthServiceTest {
         when(mockWhere.execute()).thenReturn(mockBundle);
     }
 
-    private void mockPractitionerSearch(Practitioner mockPractitioner) {
-        IUntypedQuery mockQuery = mock(IUntypedQuery.class);
-        IQuery mockQueryForResource = mock(IQuery.class);
-        IQuery mockWhere = mock(IQuery.class);
-        Bundle mockBundle = new Bundle();
-        if (mockPractitioner != null) {
-            Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
-            entry.setResource(mockPractitioner);
-            mockBundle.addEntry(entry);
-        }
-
-        when(mockClient.search()).thenReturn(mockQuery);
-        when(mockQuery.forResource(Practitioner.class)).thenReturn(mockQueryForResource);
-        when(mockQueryForResource.where((ICriterion<?>) any())).thenReturn(mockWhere);
-        when(mockWhere.returnBundle(Bundle.class)).thenReturn(mockWhere);
-        when(mockWhere.execute()).thenReturn(mockBundle);
-    }
-
     private void mockPractitionerRoleSearch(PractitionerRole mockPractitionerRole) {
         IUntypedQuery mockQuery = mock(IUntypedQuery.class);
         IQuery mockQueryForResource = mock(IQuery.class);
@@ -585,5 +617,25 @@ public class HealthServiceTest {
         when(mockQueryForResource.where((ICriterion<?>) any())).thenReturn(mockWhere);
         when(mockWhere.returnBundle(Bundle.class)).thenReturn(mockWhere);
         when(mockWhere.execute()).thenReturn(mockBundle);
+    }
+
+    private IQuery<Bundle> setupMockQueryChain(Class<?> resourceClass, Bundle mockBundle) {
+        IUntypedQuery mockQuery = mock(IUntypedQuery.class);
+        IQuery<Bundle> mockQueryForResource = mock(IQuery.class);
+        IQuery<Bundle> mockWhere = mock(IQuery.class);
+        ISort<Bundle> mockSort = mock(ISort.class);
+        IQuery<Bundle> mockDescending = mock(IQuery.class);
+        IQuery<Bundle> mockReturnBundle = mock(IQuery.class);
+
+        when(mockClient.search()).thenReturn(mockQuery);
+        when(mockQuery.forResource(resourceClass)).thenReturn(mockQueryForResource);
+        when(mockQueryForResource.where(any(ICriterion.class))).thenReturn(mockWhere);
+        when(mockWhere.where(any(ICriterion.class))).thenReturn(mockWhere);
+        when(mockWhere.sort()).thenReturn(mockSort);
+        when(mockSort.descending(any(IParam.class))).thenReturn(mockDescending);
+        when(mockDescending.returnBundle(Bundle.class)).thenReturn(mockReturnBundle);
+        when(mockReturnBundle.execute()).thenReturn(mockBundle);
+
+        return mockQueryForResource;
     }
 }
