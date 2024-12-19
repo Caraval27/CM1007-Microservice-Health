@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.*;
 import journal.lab3_health.Core.Model.PatientData;
+import journal.lab3_health.Core.Model.PractitionerData;
 import org.hl7.fhir.r4.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,15 +47,15 @@ public class HealthServiceTest {
     void testGetPatientData() {
         Patient mockPatient = new Patient();
         mockPatient.addIdentifier().setSystem(PATIENT_SYSTEM).setValue("12345");
-        mockPatient.addName().setFamily("Doe").addGiven("John");
-        mockPatient.setGender(Enumerations.AdministrativeGender.MALE);
+        mockPatient.addName().setFamily("Doe").addGiven("Jane");
+        mockPatient.setGender(Enumerations.AdministrativeGender.FEMALE);
 
         PatientData patientData = healthService.getPatientData(mockPatient);
 
         assertNotNull(patientData, "Patient data should not be null");
         assertEquals("12345", patientData.getId(), "Patient identifier should match input value");
-        assertEquals("John Doe", patientData.getFullName(), "Patient full name should match");
-        assertEquals("Male", patientData.getGender().name(), "Patient gender should match");
+        assertEquals("Jane Doe", patientData.getFullName(), "Patient full name should match");
+        assertEquals("Female", patientData.getGender().name(), "Patient gender should match");
     }
 
     @Test
@@ -67,7 +68,7 @@ public class HealthServiceTest {
         Bundle mockBundle = new Bundle();
         Patient mockPatient = new Patient();
         mockPatient.addIdentifier().setSystem(PATIENT_SYSTEM).setValue(identifierValue);
-        mockPatient.addName().setFamily("Doe").addGiven("John");
+        mockPatient.addName().setFamily("Doe").addGiven("Jane");
 
         Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
         entry.setResource(mockPatient);
@@ -84,7 +85,7 @@ public class HealthServiceTest {
         assertNotNull(result, "Patient should not be null");
         assertEquals(identifierValue, result.getIdentifierFirstRep().getValue(), "Patient identifier should match input value");
         assertEquals("Doe", result.getNameFirstRep().getFamily(), "Patient family name should match");
-        assertEquals("John", result.getNameFirstRep().getGivenAsSingleString(), "Patient given name should match");
+        assertEquals("Jane", result.getNameFirstRep().getGivenAsSingleString(), "Patient given name should match");
     }
 
     @Test
@@ -93,7 +94,7 @@ public class HealthServiceTest {
 
         Patient mockPatient = new Patient();
         mockPatient.setId(patientId);
-        mockPatient.addName().setFamily("Doe").addGiven("John");
+        mockPatient.addName().setFamily("Doe").addGiven("Jane");
 
         IRead mockRead = mock(IRead.class);
         IReadTyped<Patient> mockReadTyped = mock(IReadTyped.class);
@@ -109,10 +110,72 @@ public class HealthServiceTest {
         assertNotNull(result, "The returned Patient should not be null");
         assertEquals(patientId, result.getIdElement().getIdPart(), "The Patient ID should match the input ID");
         assertEquals("Doe", result.getNameFirstRep().getFamily(), "The Patient family name should match");
-        assertEquals("John", result.getNameFirstRep().getGivenAsSingleString(), "The Patient given name should match");
+        assertEquals("Jane", result.getNameFirstRep().getGivenAsSingleString(), "The Patient given name should match");
     }
 
-    //getPractitionerData
+    @Test
+    void testGetPractitionerData() {
+        String hsaId = "12345";
+        String phone = "555-1234";
+        String email = "test@example.com";
+        String fullName = "John Doe";
+        String roleDisplay = "Doctor";
+
+        Practitioner mockPractitioner = new Practitioner();
+        mockPractitioner.addIdentifier().setSystem(PRACTITIONER_SYSTEM).setValue(hsaId);
+        mockPractitioner.addTelecom()
+                .setSystem(ContactPoint.ContactPointSystem.PHONE)
+                .setValue(phone);
+        mockPractitioner.addTelecom()
+                .setSystem(ContactPoint.ContactPointSystem.EMAIL)
+                .setValue(email);
+        mockPractitioner.addName().setFamily("Doe").addGiven("John");
+
+        PractitionerRole mockPractitionerRole = new PractitionerRole();
+        CodeableConcept mockCodeableConcept = new CodeableConcept();
+        mockCodeableConcept.addCoding(new Coding()
+                .setSystem(PRACTITIONER_ROLE_SYSTEM)
+                .setDisplay(roleDisplay));
+        mockPractitionerRole.addCode(mockCodeableConcept);
+
+        IUntypedQuery mockQuery = mock(IUntypedQuery.class);
+        IQuery mockQueryForResource = mock(IQuery.class);
+        IQuery mockWhere = mock(IQuery.class);
+        Bundle mockBundle = new Bundle();
+        Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
+        entry.setResource(mockPractitionerRole);
+        mockBundle.addEntry(entry);
+
+        when(mockClient.search()).thenReturn(mockQuery);
+        when(mockQuery.forResource(PractitionerRole.class)).thenReturn(mockQueryForResource);
+        when(mockQueryForResource.where((ICriterion<?>) any())).thenReturn(mockWhere);
+        when(mockWhere.returnBundle(Bundle.class)).thenReturn(mockWhere);
+        when(mockWhere.execute()).thenReturn(mockBundle);
+
+        PractitionerData practitionerData = healthService.getPractitionerData(mockPractitioner);
+
+        assertNotNull(practitionerData, "PractitionerData should not be null");
+        assertEquals(hsaId, practitionerData.getId(), "HSA ID should match");
+        assertEquals(phone, practitionerData.getPhone(), "Phone number should match");
+        assertEquals(email, practitionerData.getEmail(), "Email should match");
+        assertEquals(fullName, practitionerData.getFullName(), "Full name should match");
+        assertEquals(roleDisplay, practitionerData.getRole(), "Role should match");
+    }
+
+    @Test
+    void testGetPractitionerRoleByPractitionerId() {
+
+    }
+
+    @Test
+    void testGetPractitionerByIdentifier() {
+
+    }
+
+    @Test
+    void testGetPractitionerById() {
+
+    }
 
     @Test
     void testGetGeneralPractitionerByIdentifier() {
@@ -158,5 +221,43 @@ public class HealthServiceTest {
         assertEquals(practitionerIdentifier, result, "General Practitioner ID should match expected value");
     }
 
-    //getPractitionerRoleByPractitionerId
+    @Test
+    void testGetObservationsByPatientIdentifier() {
+
+    }
+
+    @Test
+    void testGetObservationData() {
+
+    }
+
+    @Test
+    void testAddObservationToPatient() {
+
+    }
+
+    @Test
+    void testGetConditionsByPatientIdentifier() {
+
+    }
+
+    @Test
+    void testGetConditionData() {
+
+    }
+
+    @Test
+    void testAddConditionToPatient() {
+
+    }
+
+    @Test
+    void testGetEncountersByPractitionerIdentifier() {
+
+    }
+
+    @Test
+    void testGetEncounterData() {
+
+    }
 }
