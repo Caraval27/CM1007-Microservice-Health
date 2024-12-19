@@ -1,19 +1,32 @@
 package journal.lab3_health.Core;
 
+import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import ca.uhn.fhir.rest.gclient.*;
 import journal.lab3_health.Core.Model.PatientData;
 import org.hl7.fhir.r4.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@ActiveProfiles("test")
 public class HealthServiceTest {
+    @InjectMocks
     private HealthService healthService;
+
+    @MockBean
+    private FhirContext fhirContext;
+
+    @Mock
     private IGenericClient mockClient;
 
     private static final String HAPI_SERVER_URL = "https://hapi-fhir.app.cloud.cbh.kth.se/fhir";
@@ -25,13 +38,8 @@ public class HealthServiceTest {
 
     @BeforeEach
     void setUp() {
-        mockClient = mock(IGenericClient.class);
-        healthService = new HealthService() {
-            @Override
-            protected IGenericClient getClient() {
-                return mockClient;
-            }
-        };
+        MockitoAnnotations.openMocks(this);
+        when(fhirContext.newRestfulGenericClient(anyString())).thenReturn(mockClient);
     }
 
     @Test
@@ -53,27 +61,30 @@ public class HealthServiceTest {
     void testGetPatientByIdentifier() {
         String identifierValue = "12345";
 
+        IUntypedQuery mockQuery = mock(IUntypedQuery.class);
+        IQuery mockQueryForResource = mock(IQuery.class);
+        IQuery mockWhere = mock(IQuery.class);
+        Bundle mockBundle = new Bundle();
         Patient mockPatient = new Patient();
         mockPatient.addIdentifier().setSystem(PATIENT_SYSTEM).setValue(identifierValue);
         mockPatient.addName().setFamily("Doe").addGiven("John");
 
-        Bundle mockBundle = new Bundle();
-        mockBundle.addEntry().setResource(mockPatient);
+        Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
+        entry.setResource(mockPatient);
+        mockBundle.addEntry(entry);
 
-        when(mockClient
-                .search()
-                .forResource(Patient.class)
-                .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(PATIENT_SYSTEM, identifierValue))
-                .returnBundle(Bundle.class)
-                .execute())
-                .thenReturn(mockBundle);
+        when(mockClient.search()).thenReturn(mockQuery);
+        when(mockQuery.forResource(Patient.class)).thenReturn(mockQueryForResource);
+        when(mockQueryForResource.where((ICriterion<?>) any())).thenReturn(mockWhere);
+        when(mockWhere.returnBundle(Bundle.class)).thenReturn(mockWhere);
+        when(mockWhere.execute()).thenReturn(mockBundle);
 
-        Patient patient = healthService.getPatientByIdentifier(identifierValue);
+        Patient result = healthService.getPatientByIdentifier(identifierValue);
 
-        assertNotNull(patient, "Patient should not be null");
-        assertEquals(identifierValue, patient.getIdentifierFirstRep().getValue(), "Patient identifier should match input value");
-        assertEquals("Doe", patient.getNameFirstRep().getFamily(), "Patient family name should match");
-        assertEquals("John", patient.getNameFirstRep().getGivenAsSingleString(), "Patient given name should match");
+        assertNotNull(result, "Patient should not be null");
+        assertEquals(identifierValue, result.getIdentifierFirstRep().getValue(), "Patient identifier should match input value");
+        assertEquals("Doe", result.getNameFirstRep().getFamily(), "Patient family name should match");
+        assertEquals("John", result.getNameFirstRep().getGivenAsSingleString(), "Patient given name should match");
     }
 
     @Test
@@ -84,11 +95,14 @@ public class HealthServiceTest {
         mockPatient.setId(patientId);
         mockPatient.addName().setFamily("Doe").addGiven("John");
 
-        when(mockClient.read()
-                .resource(Patient.class)
-                .withId(patientId)
-                .execute())
-                .thenReturn(mockPatient);
+        IRead mockRead = mock(IRead.class);
+        IReadTyped<Patient> mockReadTyped = mock(IReadTyped.class);
+        IReadExecutable<Patient> mockExecutable = mock(IReadExecutable.class);
+
+        when(mockClient.read()).thenReturn(mockRead);
+        when(mockRead.resource(Patient.class)).thenReturn(mockReadTyped);
+        when(mockReadTyped.withId(patientId)).thenReturn(mockExecutable);
+        when(mockExecutable.execute()).thenReturn(mockPatient);
 
         Patient result = healthService.getPatientById(patientId);
 
@@ -106,30 +120,42 @@ public class HealthServiceTest {
         String practitionerIdentifier = "67890";
 
         Patient mockPatient = new Patient();
-        mockPatient.setId("1");
+        mockPatient.setId(patientIdentifier);
         mockPatient.addGeneralPractitioner().setReference("Practitioner/" + practitionerIdentifier);
 
         Practitioner mockPractitioner = new Practitioner();
-        mockPractitioner.setId("67890");
-        mockPractitioner.addIdentifier().setSystem(PRACTITIONER_SYSTEM).setValue(practitionerIdentifier);
+        mockPractitioner.setId(practitionerIdentifier);
+        mockPractitioner.addIdentifier()
+                .setSystem(PRACTITIONER_SYSTEM)
+                .setValue(practitionerIdentifier);
 
-        when(mockClient
-                .read()
-                .resource(Patient.class)
-                .withId("1")
-                .execute())
-                .thenReturn(mockPatient);
+        IUntypedQuery mockQuery = mock(IUntypedQuery.class);
+        IQuery mockQueryForResource = mock(IQuery.class);
+        IQuery mockWhere = mock(IQuery.class);
+        Bundle patientBundle = new Bundle();
+        Bundle.BundleEntryComponent patientEntry = new Bundle.BundleEntryComponent();
+        patientEntry.setResource(mockPatient);
+        patientBundle.addEntry(patientEntry);
 
-        when(mockClient
-                .read()
-                .resource(Practitioner.class)
-                .withId(practitionerIdentifier)
-                .execute())
-                .thenReturn(mockPractitioner);
+        when(mockClient.search()).thenReturn(mockQuery);
+        when(mockQuery.forResource(Patient.class)).thenReturn(mockQueryForResource);
+        when(mockQueryForResource.where((ICriterion<?>) any())).thenReturn(mockWhere);
+        when(mockWhere.returnBundle(Bundle.class)).thenReturn(mockWhere);
+        when(mockWhere.execute()).thenReturn(patientBundle);
+
+        IRead mockRead = mock(IRead.class);
+        IReadTyped<Practitioner> mockReadTyped = mock(IReadTyped.class);
+        IReadExecutable<Practitioner> mockExecutable = mock(IReadExecutable.class);
+
+        when(mockClient.read()).thenReturn(mockRead);
+        when(mockRead.resource(Practitioner.class)).thenReturn(mockReadTyped);
+        when(mockReadTyped.withId(practitionerIdentifier)).thenReturn(mockExecutable);
+        when(mockExecutable.execute()).thenReturn(mockPractitioner);
 
         String result = healthService.getGeneralPractitionerByIdentifier(patientIdentifier);
 
-        assertEquals(practitionerIdentifier, result);
+        assertNotNull(result, "General Practitioner ID should not be null");
+        assertEquals(practitionerIdentifier, result, "General Practitioner ID should match expected value");
     }
 
     //getPractitionerRoleByPractitionerId

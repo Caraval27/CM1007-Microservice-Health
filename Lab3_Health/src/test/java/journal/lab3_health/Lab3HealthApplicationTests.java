@@ -1,20 +1,14 @@
 package journal.lab3_health;
 
-import journal.lab3_health.Core.HealthService;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class Lab3HealthApplicationTests {
-
-	@Autowired
-	private HealthService healthService;
 
 	@Test
 	void contextLoads() {
-		assertNotNull(healthService, "HealthService bean should be loaded");
 	}
 }

@@ -1,7 +1,8 @@
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /build_journal_app
 COPY Lab3_Health/pom.xml .
-RUN mvn dependency:go-offline #osäker
+
+RUN mvn dependency:go-offline
 
 COPY Lab3_Health/src ./src
 

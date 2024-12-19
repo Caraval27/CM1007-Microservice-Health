@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public abstract class HealthService {
+public class HealthService {
     private FhirContext context;
     private IGenericClient client;
 
@@ -660,6 +660,4 @@ public abstract class HealthService {
 
         return new EncounterData(id, status, type, priority, patient, periodStart, periodEnd, length, location);
     }
-
-    protected abstract IGenericClient getClient();
 }
