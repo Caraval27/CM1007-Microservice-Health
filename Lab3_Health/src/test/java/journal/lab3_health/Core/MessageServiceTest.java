@@ -14,7 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-/*@SpringBootTest
+@SpringBootTest
 @ActiveProfiles("test")
 class MessageServiceTest {
     @Mock
@@ -76,4 +76,4 @@ class MessageServiceTest {
             assertEquals(name, captor.getValue());
         }
     }
-}*/
+}

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MessageService {
-    /*@Autowired
+    @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
@@ -46,5 +46,5 @@ public class MessageService {
         }
 
         kafkaTemplate.send("response-name-topic", name);
-    }*/
+    }
 }
