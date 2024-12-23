@@ -3,12 +3,16 @@ package journal.lab3_health.Core;
 import journal.lab3_health.Core.Model.*;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8081",
         "https://journal-app-frontend.app.cloud.cbh.kth.se",
@@ -26,10 +30,15 @@ public class Controller {
     @GetMapping("/patient")
     public ResponseEntity<PatientData> getPatient(@RequestParam String id) {
         try {
+            Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String userId = token.getClaimAsString("preferred_username").toUpperCase();
+            Map<String, List<String>> realmAccess = token.getClaim("realm_access");
+            List<String> roles = realmAccess.get("roles");
+            if (!userId.equals(id) && roles.contains("patient")) {
+                return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
+            }
             Patient patient = healthService.getPatientByIdentifier(id);
-            System.out.println(patient.getName().get(0).getNameAsSingleString());
             PatientData patientData = healthService.getPatientData(patient);
-            System.out.println(patientData.getFullName());
             return ResponseEntity.ok(patientData);
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,37 +58,16 @@ public class Controller {
         }
     }
 
-    @GetMapping("/find_patient")
-    public ResponseEntity<User> getPatientUser(@RequestParam String id) {
-        try {
-            User patientUser = healthService.getPatientUserByIdentifier(id);
-            if (patientUser == null) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.ok(patientUser);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/find_practitioner")
-    public ResponseEntity<User> getPractitionerUser(@RequestParam String id) {
-        try {
-            User practitionerUser = healthService.getPractitionerUserByIdentifier(id);
-            if (practitionerUser == null) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.ok(practitionerUser);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
     @GetMapping("/observations")
     public ResponseEntity<List<ObservationData>> getObservations(@RequestParam String id) {
         try {
+            Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String userId = token.getClaimAsString("preferred_username").toUpperCase();
+            Map<String, List<String>> realmAccess = token.getClaim("realm_access");
+            List<String> roles = realmAccess.get("roles");
+            if (!userId.equals(id) && roles.contains("patient")) {
+                return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
+            }
             List<Observation> observations = healthService.getObservationsByPatientIdentifier(id);
             List<ObservationData> observationsData = new ArrayList<>();
             for (Observation observation : observations) {
@@ -112,6 +100,13 @@ public class Controller {
     @GetMapping("/conditions")
     public ResponseEntity<List<ConditionData>> getConditions(@RequestParam String id) {
         try {
+            Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String userId = token.getClaimAsString("preferred_username").toUpperCase();
+            Map<String, List<String>> realmAccess = token.getClaim("realm_access");
+            List<String> roles = realmAccess.get("roles");
+            if (!userId.equals(id) && roles.contains("patient")) {
+                return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
+            }
             List<Condition> conditions = healthService.getConditionsByPatientIdentifier(id);
             List<ConditionData> conditionsData = new ArrayList<>();
             for (Condition condition : conditions) {
@@ -151,7 +146,7 @@ public class Controller {
         }
     }
 
-    @GetMapping("/get_general_practitioner_by_identifier")
+    /*@GetMapping("/get_general_practitioner_by_identifier")
     public ResponseEntity<String> getGeneralPractitionerByIdentifier(@RequestParam String id) {
         try {
             String receiverIdentifier = healthService.getGeneralPractitionerByIdentifier(id);
@@ -160,5 +155,5 @@ public class Controller {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
-    }
+    }*/
 }
