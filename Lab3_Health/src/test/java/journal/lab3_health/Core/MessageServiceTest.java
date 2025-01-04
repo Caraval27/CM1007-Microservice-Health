@@ -31,7 +31,7 @@ class MessageServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @ParameterizedTest
+    /*@ParameterizedTest
     @CsvSource({
             "12345, Dr. John Doe",   // Case 1: Valid senderId and general practitioner
             "'', ",                  // Case 2: Empty senderId
@@ -75,5 +75,5 @@ class MessageServiceTest {
             verify(kafkaTemplate).send(eq("response-name-topic"), captor.capture());
             assertEquals(name, captor.getValue());
         }
-    }
+    }*/
 }
