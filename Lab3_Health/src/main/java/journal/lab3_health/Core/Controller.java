@@ -146,15 +146,4 @@ public class Controller {
             return ResponseEntity.badRequest().build();
         }
     }
-
-    @GetMapping("/get_general_practitioner_by_identifier")
-    public ResponseEntity<String> getGeneralPractitionerByIdentifier(@RequestParam String id) {
-        try {
-            String receiverIdentifier = healthService.getGeneralPractitionerByIdentifier(id);
-            return ResponseEntity.ok(receiverIdentifier);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build();
-        }
-    }
 }
