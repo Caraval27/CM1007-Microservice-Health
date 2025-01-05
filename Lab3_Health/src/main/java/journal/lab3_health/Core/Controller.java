@@ -86,7 +86,8 @@ public class Controller {
         try {
             String imageId = null;
             if (image != null) {
-                imageId = imageServiceClient.createBinary(image);
+                Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                imageId = imageServiceClient.createBinary(image, "Bearer " + token.getTokenValue());
             }
             System.out.println("Binary created with id: " + imageId);
             healthService.addObservationToPatient(newObservation, imageId);
