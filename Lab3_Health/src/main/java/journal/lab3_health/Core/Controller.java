@@ -80,7 +80,7 @@ public class Controller {
         }
     }
 
-    @PostMapping("/create_observation")
+    @PostMapping("/create-observation")
     public ResponseEntity<Void> createNewObservation(@RequestPart("observation") CreateObservation newObservation,
                                                      @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
@@ -120,7 +120,7 @@ public class Controller {
         }
     }
 
-    @PostMapping("/create_condition")
+    @PostMapping("/create-condition")
     public ResponseEntity<Void> createNewCondition(@RequestBody CreateCondition newCondition) {
         try {
             healthService.addConditionToPatient(newCondition);
