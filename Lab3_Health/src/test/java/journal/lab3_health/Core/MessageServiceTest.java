@@ -40,9 +40,7 @@ class MessageServiceTest {
     @ParameterizedTest
     @CsvSource({
             "12345, Dr. John Doe",   // Case 1: Valid senderId and general practitioner
-            "'', ",                  // Case 2: Empty senderId
-            "null, ",                // Case 3: Null senderId
-            "12345, null"            // Case 4: Valid senderId but no practitioner found
+            "12345, null"            // Case 2: Valid senderId but no practitioner found
     })
     void testProcessGeneralPractitionerRequest(String senderId, String generalPractitioner) {
         String tokenString = "mockToken";
@@ -75,9 +73,7 @@ class MessageServiceTest {
     @ParameterizedTest
     @CsvSource({
             "67890, Jane Doe",   // Case 1: Valid identifier and name
-            "'', ",              // Case 2: Empty identifier
-            "null, ",            // Case 3: Null identifier
-            "67890, null"        // Case 4: Valid identifier but no name found
+            "67890, null"        // Case 2: Valid identifier but no name found
     })
     void testProcessNameRequest(String identifier, String name) {
         String tokenString = "mockToken";

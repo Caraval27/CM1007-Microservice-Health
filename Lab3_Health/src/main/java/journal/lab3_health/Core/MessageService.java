@@ -22,7 +22,7 @@ public class MessageService {
 
     @KafkaListener(topics = "request-general-practitioner-topic", groupId = "health-service-group")
     public void processGeneralPractitionerRequest(@Payload String senderId, @Header("Authorization") String authorizationHeader) {
-        if (!authorizationHeader.startsWith("Bearer ") || senderId == null || senderId.trim().isEmpty()) {
+        if (!authorizationHeader.startsWith("Bearer ")) {
             return;
         }
         String tokenString = authorizationHeader.substring(7);
@@ -37,7 +37,7 @@ public class MessageService {
 
     @KafkaListener(topics = "request-name-topic", groupId = "health-service-group")
     public void processNameRequest(@Payload String identifier, @Header("Authorization") String authorizationHeader) {
-        if (!authorizationHeader.startsWith("Bearer ") || identifier == null || identifier.trim().isEmpty()) {
+        if (!authorizationHeader.startsWith("Bearer ")) {
             return;
         }
         String tokenString = authorizationHeader.substring(7);
