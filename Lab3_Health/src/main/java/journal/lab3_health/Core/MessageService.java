@@ -5,13 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class MessageService {
@@ -26,7 +22,7 @@ public class MessageService {
 
     @KafkaListener(topics = "request-general-practitioner-topic", groupId = "health-service-group")
     public void processGeneralPractitionerRequest(@Payload String senderId, @Header("Authorization") String authorizationHeader) {
-        if (!authorizationHeader.startsWith("Bearer ")) {
+        if (!authorizationHeader.startsWith("Bearer ") || senderId == null || senderId.trim().isEmpty()) {
             return;
         }
         String tokenString = authorizationHeader.substring(7);
@@ -41,7 +37,7 @@ public class MessageService {
 
     @KafkaListener(topics = "request-name-topic", groupId = "health-service-group")
     public void processNameRequest(@Payload String identifier, @Header("Authorization") String authorizationHeader) {
-        if (!authorizationHeader.startsWith("Bearer ")) {
+        if (!authorizationHeader.startsWith("Bearer ") || identifier == null || identifier.trim().isEmpty()) {
             return;
         }
         String tokenString = authorizationHeader.substring(7);

@@ -1,5 +1,6 @@
 package journal.lab3_health.Core;
 
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -9,6 +10,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.mockito.Mockito.*;
@@ -23,6 +26,9 @@ class MessageServiceTest {
     @Mock
     private HealthService healthService;
 
+    @Mock
+    private JwtDecoder jwtDecoder;
+
     @InjectMocks
     private MessageService messageService;
 
@@ -31,7 +37,7 @@ class MessageServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    /*@ParameterizedTest
+    @ParameterizedTest
     @CsvSource({
             "12345, Dr. John Doe",   // Case 1: Valid senderId and general practitioner
             "'', ",                  // Case 2: Empty senderId
@@ -39,18 +45,30 @@ class MessageServiceTest {
             "12345, null"            // Case 4: Valid senderId but no practitioner found
     })
     void testProcessGeneralPractitionerRequest(String senderId, String generalPractitioner) {
+        String tokenString = "mockToken";
+        String authorizationHeader = "Bearer " + tokenString;
+
+        when(jwtDecoder.decode(tokenString)).thenReturn(mock(Jwt.class));
+
         if (!"null".equals(senderId)) {
             when(healthService.getGeneralPractitionerByIdentifier(senderId)).thenReturn(generalPractitioner);
         }
 
-        messageService.processGeneralPractitionerRequest("null".equals(senderId) ? null : senderId);
+        messageService.processGeneralPractitionerRequest(
+                "null".equals(senderId) ? null : senderId,
+                authorizationHeader
+        );
 
         if (senderId == null || senderId.trim().isEmpty() || generalPractitioner == null || generalPractitioner.trim().isEmpty()) {
             verifyNoInteractions(kafkaTemplate);
         } else {
-            ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-            verify(kafkaTemplate).send(eq("response-general-practitioner-topic"), captor.capture());
-            assertEquals(generalPractitioner, captor.getValue());
+            ArgumentCaptor<ProducerRecord<String, String>> recordCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
+            verify(kafkaTemplate).send(recordCaptor.capture());
+
+            ProducerRecord<String, String> capturedRecord = recordCaptor.getValue();
+            assertEquals("response-general-practitioner-topic", capturedRecord.topic());
+            assertEquals(generalPractitioner, capturedRecord.value());
+            assertEquals(authorizationHeader, new String(capturedRecord.headers().lastHeader("Authorization").value()));
         }
     }
 
@@ -62,18 +80,30 @@ class MessageServiceTest {
             "67890, null"        // Case 4: Valid identifier but no name found
     })
     void testProcessNameRequest(String identifier, String name) {
+        String tokenString = "mockToken";
+        String authorizationHeader = "Bearer " + tokenString;
+
+        when(jwtDecoder.decode(tokenString)).thenReturn(mock(Jwt.class));
+
         if (!"null".equals(identifier)) {
             when(healthService.getPatientOrPractitionerNameByIdentifier(identifier)).thenReturn(name);
         }
 
-        messageService.processNameRequest("null".equals(identifier) ? null : identifier);
+        messageService.processNameRequest(
+                "null".equals(identifier) ? null : identifier,
+                authorizationHeader
+        );
 
         if (identifier == null || identifier.trim().isEmpty() || name == null || name.trim().isEmpty()) {
             verifyNoInteractions(kafkaTemplate);
         } else {
-            ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-            verify(kafkaTemplate).send(eq("response-name-topic"), captor.capture());
-            assertEquals(name, captor.getValue());
+            ArgumentCaptor<ProducerRecord<String, String>> recordCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
+            verify(kafkaTemplate).send(recordCaptor.capture());
+
+            ProducerRecord<String, String> capturedRecord = recordCaptor.getValue();
+            assertEquals("response-name-topic", capturedRecord.topic());
+            assertEquals(name, capturedRecord.value());
+            assertEquals(authorizationHeader, new String(capturedRecord.headers().lastHeader("Authorization").value()));
         }
-    }*/
+    }
 }
