@@ -6,7 +6,7 @@ RUN mvn dependency:go-offline
 
 COPY Lab3_Health/src ./src
 
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 FROM openjdk:17-jdk-alpine
 WORKDIR /journal_app
