@@ -95,18 +95,6 @@ public class HealthService {
         return new PatientData(ssn, fullName, gender, email, phone, line, city, postalCode);
     }
 
-    public User getPatientUserByIdentifier(String identifierValue) {
-        Patient patient = getPatientByIdentifier(identifierValue);
-        if (patient == null) {
-            return null;
-        }
-        String fullName = "";
-        if (patient.hasName() && !patient.getName().isEmpty()) {
-            fullName = patient.getNameFirstRep().getNameAsSingleString();
-        }
-        return new User(identifierValue, fullName, Authority.Patient);
-    }
-
     public Patient getPatientByIdentifier(String idValue) {
         Bundle bundle = client
                 .search()
@@ -185,35 +173,6 @@ public class HealthService {
                 .execute();
         return bundle.getEntry().stream().map(pR -> (PractitionerRole) pR.getResource())
                 .toList();
-    }
-
-    public User getPractitionerUserByIdentifier(String identifierValue) {
-        Practitioner practitioner = getPractitionerByIdentifier(identifierValue);
-        if (practitioner == null) {
-            return null;
-        }
-        String fullName = "";
-        if (practitioner.hasName() && !practitioner.getName().isEmpty()) {
-            fullName = practitioner.getNameFirstRep().getNameAsSingleString();
-        }
-        Authority authority = Authority.Staff;
-        List<PractitionerRole> practitionerRoles = getPractitionerRoleByPractitionerId(practitioner.getIdPart());
-        if (!practitionerRoles.isEmpty()) {
-            PractitionerRole practitionerRole = practitionerRoles.get(0);
-            if (practitionerRole.hasCode() && !practitionerRole.getCode().isEmpty()) {
-                CodeableConcept codeableConcept = practitionerRole.getCodeFirstRep();
-                if (codeableConcept.hasCoding()) {
-                    for (Coding coding : codeableConcept.getCoding()) {
-                        if (coding.getSystem().equals(PRACTITIONER_ROLE_SYSTEM)) {
-                            if (coding.getCode().equals("doctor")) {
-                                authority = Authority.Doctor;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return new User(identifierValue, fullName, authority);
     }
 
     public Practitioner getPractitionerByIdentifier(String identifierValue) {
